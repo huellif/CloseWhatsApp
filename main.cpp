@@ -3,10 +3,13 @@
 
 #include <apgtask.h>
 #include <eikenv.h>
-#include <akndiscreetpopup.h>
 #include <aknnotewrappers.h>
+
+#include <akninfopopupnotecontroller.h>
 int main(int argc, char *argv[])
 {
+    QApplication app(argc, argv);
+
     bool running = false;
 
 
@@ -28,11 +31,29 @@ int main(int argc, char *argv[])
             ph.Close();
         }
 
-    QApplication app(argc, argv);
 
     if (running == false)
     {
-        TRAP_IGNORE(CAknDiscreetPopup::ShowGlobalPopupL((_L("This app is designed to close WhatsApp.")), (_L("WhatsApp isn't installed or running on your Device.")),KAknsIIDNone, KNullDesC, 0, 0, KAknDiscreetPopupDurationLong));}
+        CAknInfoPopupNoteController* iNote;
+        iNote = CAknInfoPopupNoteController::NewL();
+
+            iNote->SetTimeDelayBeforeShow(10);
+
+            // Set the time period of how long the popup is in the view (in milliseconds)
+            iNote->SetTimePopupInView(4000);
+
+            // Note text
+            iNote->SetTextL(_L("This app is designed to close WhatsApp. WhatsApp isn't installed or running on your Device."));
+
+            // Note position
+            iNote->SetPositionAndAlignment(TPoint(10,20),EHRightVTop);
+
+            // Show note
+            iNote->ShowInfoPopupNote();
+
+            QTest::qWait(4000);
+            delete iNote;
+    }
     else
     {
         CAknConfirmationNote* run = new (ELeave) CAknConfirmationNote;
@@ -69,9 +90,10 @@ int main(int argc, char *argv[])
             ph3.Kill(KErrNone);
             ph3.Close();
         }
+        QTest::qWait(1500);
     }
 
-    QTest::qWait(1500);
+
 
     return 1;
 }
