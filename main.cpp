@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QTest>
 
 #include <apgtask.h>
 #include <eikenv.h>
