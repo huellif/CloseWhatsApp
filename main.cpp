@@ -3,14 +3,18 @@
 
 #include <apgtask.h>
 #include <eikenv.h>
-#include <aknnotewrappers.h>
 
-#include <akninfopopupnotecontroller.h>
+
+#include <AknGlobalNote.h>
+#include <avkon.rsg>
+#include <aknappui.h>
+#include <avkon.mbg>
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    bool running = false;
+    TBool running = EFalse;
 
 
         TFullName res;
@@ -18,13 +22,13 @@ int main(int argc, char *argv[])
         while(find.Next(res) == KErrNone)
         {
             RProcess ph;
-            ph.Open(res);
+            User::LeaveIfError( ph.Open(res) );
 
             if(ph.SecureId() == 0x2002B30D)
 
             if (ph.ExitType() == EExitPending)
             {
-                running = true;
+                running = ETrue;
                 break;
             }
 
@@ -32,39 +36,30 @@ int main(int argc, char *argv[])
         }
 
 
-    if (running == false)
+    if (!running)
     {
-        CAknInfoPopupNoteController* iNote;
-        iNote = CAknInfoPopupNoteController::NewL();
 
-            iNote->SetTimeDelayBeforeShow(10);
 
-            // Set the time period of how long the popup is in the view (in milliseconds)
-            iNote->SetTimePopupInView(4000);
-
-            // Note text
-            iNote->SetTextL(_L("This app is designed to close WhatsApp. WhatsApp isn't installed or running on your Device."));
-
-            // Note position
-            iNote->SetPositionAndAlignment(TPoint(10,20),EHRightVTop);
-
-            // Show note
-            iNote->ShowInfoPopupNote();
-
-            QTest::qWait(4000);
-            delete iNote;
+        CAknGlobalNote* note = CAknGlobalNote::NewLC();
+        note->SetGraphic(16572,16573);
+        TInt id = note->ShowNoteL(EAknGlobalPermanentNote, _L("Error.\nThis app is designed to close WhatsApp. WhatsApp isn't installed or running on your Device."));
+        User::After(4500000);
+        note->CancelNoteL(id);
+        CleanupStack::PopAndDestroy(note);
     }
     else
     {
-        CAknConfirmationNote* run = new (ELeave) CAknConfirmationNote;
-        QT_TRAP_THROWING(run->ExecuteLD(_L("Closed WhatsApp")));
+
+        CAknGlobalNote* note1 = CAknGlobalNote::NewLC();
+        note1->ShowNoteL(EAknGlobalConfirmationNote,(_L("Success.\nClosed WhatsApp.")));
+
         TFullName res1;
         TFindProcess find1(_L("*[2002B306]*"));
 
         while(find1.Next(res1) == KErrNone)
         {
             RProcess ph1;
-            ph1.Open(find1);
+            User::LeaveIfError( ph1.Open(find1) );
             ph1.Kill(KErrNone);
             ph1.Close();
         }
@@ -75,7 +70,7 @@ int main(int argc, char *argv[])
         while(find2.Next(res2) == KErrNone)
         {
             RProcess ph2;
-            ph2.Open(find2);
+            User::LeaveIfError(  ph2.Open(find2) );
             ph2.Kill(KErrNone);
             ph2.Close();
         }
@@ -86,14 +81,15 @@ int main(int argc, char *argv[])
         while(find3.Next(res3) == KErrNone)
         {
             RProcess ph3;
-            ph3.Open(find3);
+            User::LeaveIfError(  ph3.Open(find3) );
             ph3.Kill(KErrNone);
             ph3.Close();
         }
-        QTest::qWait(1500);
+
+
+        User::After(2400000);
+        CleanupStack::PopAndDestroy(note1);
     }
-
-
 
     return 1;
 }
