@@ -1,56 +1,45 @@
-#include <QApplication>
-
+//process management
 #include <apgtask.h>
 #include <eikenv.h>
 
-
+//popups
 #include <AknGlobalNote.h>
-#include <avkon.rsg>
-#include <aknappui.h>
 #include <avkon.mbg>
 
-int main(int argc, char *argv[])
+//UI:
+#include <coemain.h>
+LOCAL_C void ExeMainL()
 {
-    QApplication app(argc, argv);
-
     TBool running = EFalse;
-
-
-        TFullName res;
-        TFindProcess find;
-        while(find.Next(res) == KErrNone)
+    TFullName res;
+    TFindProcess find;
+    while(find.Next(res) == KErrNone)
+    {
+        RProcess ph;
+        User::LeaveIfError( ph.Open(res) );
+        if(ph.SecureId() == 0x2002B30D)
+        if (ph.ExitType() == EExitPending)
         {
-            RProcess ph;
-            User::LeaveIfError( ph.Open(res) );
-
-            if(ph.SecureId() == 0x2002B30D)
-
-            if (ph.ExitType() == EExitPending)
-            {
-                running = ETrue;
-                break;
-            }
-
-            ph.Close();
+            running = ETrue;
+            break;
         }
-
+            ph.Close();
+    }
 
     if (!running)
     {
-
-
         CAknGlobalNote* note = CAknGlobalNote::NewLC();
         note->SetGraphic(16572,16573);
-        TInt id = note->ShowNoteL(EAknGlobalPermanentNote, _L("Error.\nThis app is designed to close WhatsApp. WhatsApp isn't installed or running on your Device."));
+        TInt id = note->ShowNoteL(EAknGlobalPermanentNote, _L("Error.\nThis app is designed to close WhatsApp. WhatsApp isn't installed or running on your device."));
         User::After(4500000);
         note->CancelNoteL(id);
         CleanupStack::PopAndDestroy(note);
     }
     else
     {
-
-        CAknGlobalNote* note1 = CAknGlobalNote::NewLC();
-        note1->ShowNoteL(EAknGlobalConfirmationNote,(_L("Success.\nClosed WhatsApp.")));
+        CAknGlobalNote* note = CAknGlobalNote::NewLC();
+        note->SetGraphic(16584,16585);
+        TInt id = note->ShowNoteL(EAknGlobalPermanentNote, _L("Success.\nClosed WhatsApp."));
 
         TFullName res1;
         TFindProcess find1(_L("*[2002B306]*"));
@@ -80,15 +69,23 @@ int main(int argc, char *argv[])
         while(find3.Next(res3) == KErrNone)
         {
             RProcess ph3;
-            User::LeaveIfError(  ph3.Open(find3) );
+            User::LeaveIfError(ph3.Open(find3));
             ph3.Kill(KErrNone);
             ph3.Close();
         }
 
-
-        User::After(2400000);
-        CleanupStack::PopAndDestroy(note1);
+        User::After(2000000);
+        note->CancelNoteL(id);
+        CleanupStack::PopAndDestroy(note);
     }
-
-    return 1;
 }
+
+TInt E32Main()
+{
+    CCoeEnv* coe = new CCoeEnv;
+    TRAPD(err, coe->ConstructL());
+    TRAPD(error, ExeMainL());
+    coe->DestroyEnvironment();
+    return 0;
+}
+
