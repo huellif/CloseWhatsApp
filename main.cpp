@@ -1,5 +1,4 @@
 //process management
-#include <apgtask.h>
 #include <eikenv.h>
 
 //popups
