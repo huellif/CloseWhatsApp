@@ -1,17 +1,21 @@
 symbian {
-vendorinfo += "%{\"huellifSoft\"}" ":\"huellifSoft\""
-
 TARGET.UID3 += 0x2007164a
 
-LIBS += -laknnotify -lcone
+LIBS += -laknnotify
 
 TARGET.CAPABILITY += PowerMgmt
 
 default_deployment.pkg_prerules -= pkg_depends_webkit
 default_deployment.pkg_prerules -= pkg_depends_qt
+
+    my_deployment.pkg_prerules += vendorinfo
+
+    DEPLOYMENT += my_deployment
+
+    vendorinfo += "%{\"huellifSoft\"}" ":\"huellifSoft\""
 }
 
-VERSION = 1.3.0
+VERSION = 1.4.0
 
 SOURCES += main.cpp
 

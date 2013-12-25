@@ -1,12 +1,5 @@
-//process management
-#include <eikenv.h>
-
-//popups
 #include <AknGlobalNote.h>
-#include <avkon.mbg>
 
-//UI:
-#include <coemain.h>
 LOCAL_C void ExeMainL()
 {
     TBool running = EFalse;
@@ -28,17 +21,17 @@ LOCAL_C void ExeMainL()
     if (!running)
     {
         CAknGlobalNote* note = CAknGlobalNote::NewLC();
-        note->SetGraphic(16572,16573);
-        TInt id = note->ShowNoteL(EAknGlobalPermanentNote, _L("Error.\nThis app is designed to close WhatsApp. WhatsApp isn't installed or running on your device."));
-        User::After(4500000);
-        note->CancelNoteL(id);
+        TRequestStatus iStatus;
+        note->ShowNoteL(iStatus, EAknGlobalErrorNote, _L("Error.\nThis app is designed to close WhatsApp. WhatsApp isn't installed or running on your device."));
+        User::WaitForRequest(iStatus);
         CleanupStack::PopAndDestroy(note);
     }
     else
     {
         CAknGlobalNote* note = CAknGlobalNote::NewLC();
-        note->SetGraphic(16584,16585);
-        TInt id = note->ShowNoteL(EAknGlobalPermanentNote, _L("Success.\nClosed WhatsApp."));
+        TRequestStatus iStatus;
+        note->ShowNoteL(iStatus, EAknGlobalConfirmationNote, _L("Success.\nClosed WhatsApp."));
+
 
         TFullName res1;
         TFindProcess find1(_L("*[2002B306]*"));
@@ -72,19 +65,16 @@ LOCAL_C void ExeMainL()
             ph3.Kill(KErrNone);
             ph3.Close();
         }
-
-        User::After(2000000);
-        note->CancelNoteL(id);
+        User::WaitForRequest(iStatus);
         CleanupStack::PopAndDestroy(note);
     }
 }
 
 TInt E32Main()
 {
-    CCoeEnv* coe = new CCoeEnv;
-    TRAPD(err, coe->ConstructL());
+    CTrapCleanup* cl=CTrapCleanup::New();
     TRAPD(error, ExeMainL());
-    coe->DestroyEnvironment();
+    delete cl;
     return 0;
 }
 
