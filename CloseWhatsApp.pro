@@ -34,4 +34,4 @@ CONFIG -= qt
 
 #s60v5:
 #MMP_RULES += "DEBUGGABLE"
-INCLUDEPATH += C:\QtSDK\Symbian\SDKs\Symbian1Qt473\epoc32\include\
+INCLUDEPATH += C:/QtSDK/Symbian/SDKs/Symbian1Qt473/epoc32/include/

@@ -1,24 +1,41 @@
 #include <AknGlobalNote.h>
 
-LOCAL_C void ExeMainL()
+LOCAL_C TBool running()
 {
-    TBool running = EFalse;
+    TBool ret = EFalse;
     TFullName res;
     TFindProcess find;
     while(find.Next(res) == KErrNone)
     {
         RProcess ph;
-        User::LeaveIfError( ph.Open(res) );
-        if(ph.SecureId() == 0x2002B30D)
-        if (ph.ExitType() == EExitPending)
-        {
-            running = ETrue;
-            break;
-        }
-            ph.Close();
+        User::LeaveIfError(ph.Open(res));
+        if(ph.SecureId() == 537047821)
+            if (ph.ExitType() == EExitPending)
+            {
+                ret = ETrue;
+                break;
+            }
+        ph.Close();
     }
+    return ret;
+}
 
-    if (!running)
+LOCAL_C void kill(const TDesC &process)
+{
+    TFullName res;
+    TFindProcess find(process);
+    while(find.Next(res) == KErrNone)
+    {
+        RProcess ph;
+        User::LeaveIfError(ph.Open(find));
+        ph.Kill(KErrNone);
+        ph.Close();
+    }
+}
+
+LOCAL_C void ExeMainL()
+{
+    if (!running())
     {
         CAknGlobalNote* note = CAknGlobalNote::NewLC();
         TRequestStatus iStatus;
@@ -33,38 +50,10 @@ LOCAL_C void ExeMainL()
         note->ShowNoteL(iStatus, EAknGlobalConfirmationNote, _L("Success.\nClosed WhatsApp."));
 
 
-        TFullName res1;
-        TFindProcess find1(_L("*[2002B306]*"));
+        kill(_L("*[2002B306]*"));
+        kill(_L("*[2002B310]*"));
+        kill(_L("*[2002B30D]*"));
 
-        while(find1.Next(res1) == KErrNone)
-        {
-            RProcess ph1;
-            User::LeaveIfError( ph1.Open(find1) );
-            ph1.Kill(KErrNone);
-            ph1.Close();
-        }
-
-        TFullName res2;
-        TFindProcess find2(_L("*[2002B310]*"));
-
-        while(find2.Next(res2) == KErrNone)
-        {
-            RProcess ph2;
-            User::LeaveIfError(  ph2.Open(find2) );
-            ph2.Kill(KErrNone);
-            ph2.Close();
-        }
-
-        TFullName res3;
-        TFindProcess find3(_L("*[2002B30D]*"));
-
-        while(find3.Next(res3) == KErrNone)
-        {
-            RProcess ph3;
-            User::LeaveIfError(ph3.Open(find3));
-            ph3.Kill(KErrNone);
-            ph3.Close();
-        }
         User::WaitForRequest(iStatus);
         CleanupStack::PopAndDestroy(note);
     }
